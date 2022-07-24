@@ -1,4 +1,5 @@
 import pandas as pd
+from io import StringIO
 
 
 class LimeSurveyParser:
@@ -6,4 +7,6 @@ class LimeSurveyParser:
         pass
 
     def parse(self, content: str) -> pd.DataFrame:
-        return pd.DataFrame()
+        if not content:
+            return pd.DataFrame()
+        return pd.read_csv(StringIO(content), header=0)
