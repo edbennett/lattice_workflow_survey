@@ -1,1 +1,1 @@
-from .limesurvey_parser import LimeSurveyParser
+from .limesurvey_parser import LimeSurveyParser as LimeSurveyParser
