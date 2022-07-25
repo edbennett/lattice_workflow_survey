@@ -1,6 +1,7 @@
 import pytest
 from limesurvey_parser import LimeSurveyParser
 import pandas as pd
+import numpy as np
 
 
 @pytest.fixture
@@ -14,3 +15,7 @@ def test_returns_data_frame_on_empty_input(parser) -> None:
 
 def test_parses_first_line_as_header(parser) -> None:
     assert parser.parse("header").columns == pd.Index(["header"])
+
+
+def test_parses_second_line_as_data(parser) -> None:
+    assert parser.parse("header\ndata").values == np.array(["data"])
