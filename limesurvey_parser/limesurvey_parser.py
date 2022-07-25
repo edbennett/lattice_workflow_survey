@@ -9,4 +9,4 @@ class LimeSurveyParser:
     def parse(self, content: str) -> pd.DataFrame:
         if not content:
             return pd.DataFrame()
-        return pd.read_csv(StringIO(content), header=0)
+        return pd.read_csv(StringIO(content), header=0, sep=";")
