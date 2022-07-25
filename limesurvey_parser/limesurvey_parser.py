@@ -51,8 +51,14 @@ class LimeSurveyParser:
         return None
 
     def parse_metadata(self, content: str) -> pd.DataFrame:
-        full_data = self.parse(content)
-        metadata = full_data.iloc[
+        return self._convert_pertinent_columns_to_timestamps(
+            self._select_columns_before_first_question(self.parse(content))
+        )
+
+    def _select_columns_before_first_question(
+        self, full_data: pd.DataFrame
+    ) -> pd.DataFrame:
+        return full_data.iloc[
             :,
             np.cumprod(
                 [
@@ -62,6 +68,10 @@ class LimeSurveyParser:
                 dtype=bool,
             ),
         ].copy()
+
+    def _convert_pertinent_columns_to_timestamps(
+        self, metadata: pd.DataFrame
+    ) -> pd.DataFrame:
         for key in metadata.columns:
             if "date" in key[0] and "Date" in key[1]:
                 metadata[key] = pd.to_datetime(
