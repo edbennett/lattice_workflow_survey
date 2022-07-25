@@ -47,3 +47,9 @@ def test_separator_can_be_configured() -> None:
 
 def test_parses_question_id(parser: LimeSurveyParser) -> None:
     assert parser.parse_question_id("G01Q02") == dict(group=1, question=2)
+
+
+def test_parses_question_id_with_selected_answer(parser: LimeSurveyParser) -> None:
+    assert parser.parse_question_id("G01Q2[SQ003]") == dict(
+        group=1, question=2, answer=3
+    )

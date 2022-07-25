@@ -16,7 +16,13 @@ class LimeSurveyParser:
             return pd.DataFrame()
         return pd.read_csv(StringIO(content), header=0, sep=self.sep)
 
-    def parse_question_id(self, heading: str) -> Dict[str, int]:
+    def parse_question_id(self, id_string: str) -> Dict[str, int]:
         # The extra `dict` is a dirty hack for mypy. Should better use a stub
         # file here probably.
-        return dict(parse.parse("G{group:d}Q{question:d}", heading).named)
+        id = parse.parse("G{group:d}Q{question:d}", id_string)
+        if id is not None:
+            # Parsing was sucessful, so no additional answer id is present.
+            return dict(id.named)
+        return dict(
+            parse.parse("G{group:d}Q{question:d}[SQ{answer:d}]", id_string).named
+        )
