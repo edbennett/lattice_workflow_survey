@@ -91,3 +91,11 @@ def test_for_confidence_splits_headers_with_multiple_entries(
         # a bit weird but first creates a pd.Series, second makes a bool:
         .all().all()
     )
+
+
+def test_recognizes_question_headers(parser: LimeSurveyParser) -> None:
+    assert parser.is_question_header("G01Q02---Is this a question?")
+
+
+def test_recognizes_non_question_headers(parser: LimeSurveyParser) -> None:
+    assert not parser.is_question_header("id---Response ID")
