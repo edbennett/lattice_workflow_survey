@@ -12,9 +12,9 @@ def parser() -> LimeSurveyParser:
     return LimeSurveyParser()
 
 
-def make_columns_structure_from(iterable: Iterable[str]) -> pd.MultiIndex:
+def make_columns_structure_from(titles: Iterable[str]) -> pd.MultiIndex:
     return pd.MultiIndex.from_tuples(
-        [(None, val) for val in iterable], names=["id", "title"]
+        [(None, title) for title in titles], names=["id", "title"]
     )
 
 
