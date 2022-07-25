@@ -30,3 +30,15 @@ def test_uses_semicolon_as_default_separator(parser) -> None:
         # a bit weird but first creates a pd.Series, second makes a bool:
         .all().all()
     )
+
+
+def test_separator_can_be_configured() -> None:
+    parser = LimeSurveyParser(sep=",")
+    assert (
+        (
+            parser.parse("header1,header2\ndata1,data2")
+            == pd.DataFrame([["data1", "data2"]], columns=["header1", "header2"])
+        )
+        # a bit weird but first creates a pd.Series, second makes a bool:
+        .all().all()
+    )
