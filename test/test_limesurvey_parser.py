@@ -23,11 +23,13 @@ def test_returns_data_frame_on_empty_input(parser: LimeSurveyParser) -> None:
 
 
 def test_parses_first_line_as_header(parser: LimeSurveyParser) -> None:
-    assert parser.parse("header").columns == make_columns_structure_from(["header"])
+    assert parser.parse("index;header").columns == make_columns_structure_from(
+        ["header"]
+    )
 
 
 def test_parses_second_line_as_data(parser: LimeSurveyParser) -> None:
-    assert parser.parse("header\ndata").values == np.array(["data"])
+    assert parser.parse("index;header\nindex;data").values == np.array(["data"])
 
 
 def test_uses_semicolon_as_default_separator(parser: LimeSurveyParser) -> None:
@@ -35,8 +37,9 @@ def test_uses_semicolon_as_default_separator(parser: LimeSurveyParser) -> None:
         (
             parser.parse("header1;header2\ndata1;data2")
             == pd.DataFrame(
-                [["data1", "data2"]],
-                columns=make_columns_structure_from(["header1", "header2"]),
+                [["data2"]],
+                index=pd.Index(["data1"], name="header1"),
+                columns=make_columns_structure_from(["header2"]),
             )
         )
         # a bit weird but first creates a pd.Series, second makes a bool:
@@ -50,8 +53,9 @@ def test_separator_can_be_configured() -> None:
         (
             parser.parse("header1,header2\ndata1,data2")
             == pd.DataFrame(
-                [["data1", "data2"]],
-                columns=make_columns_structure_from(["header1", "header2"]),
+                [["data2"]],
+                index=pd.Index(["data1"], name="header1"),
+                columns=make_columns_structure_from(["header2"]),
             )
         )
         # a bit weird but first creates a pd.Series, second makes a bool:
@@ -72,7 +76,7 @@ def test_parses_question_id_with_selected_answer(parser: LimeSurveyParser) -> No
 def test_splits_headers_with_separator_in_them(parser: LimeSurveyParser) -> None:
     default_separator = "---"
     assert parser.parse(
-        "head_id" + default_separator + "head_title"
+        "index;head_id" + default_separator + "head_title"
     ).columns == pd.MultiIndex.from_tuples(
         [("head_id", "head_title")], names=["id", "title"]
     )
@@ -83,7 +87,7 @@ def test_for_confidence_splits_headers_with_multiple_entries(
 ) -> None:
     assert (
         (
-            parser.parse("1---first;2---second").columns
+            parser.parse("index;1---first;2---second").columns
             == pd.MultiIndex.from_tuples(
                 [("1", "first"), ("2", "second")], names=["id", "title"]
             )
@@ -99,3 +103,9 @@ def test_recognizes_question_headers(parser: LimeSurveyParser) -> None:
 
 def test_recognizes_non_question_headers(parser: LimeSurveyParser) -> None:
     assert not parser.is_question_header("id---Response ID")
+
+
+def test_uses_first_column_as_index(parser: LimeSurveyParser) -> None:
+    assert parser.parse("index;header\nindex entry;data").index == pd.Index(
+        ["index entry"]
+    )

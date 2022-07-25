@@ -16,7 +16,9 @@ class LimeSurveyParser:
     def parse(self, content: str) -> pd.DataFrame:
         if not content:
             return pd.DataFrame()
-        original_data = pd.read_csv(StringIO(content), header=0, sep=self.sep_csv)
+        original_data = pd.read_csv(
+            StringIO(content), header=0, index_col=0, sep=self.sep_csv
+        )
         return self._organize_header(original_data)
 
     def is_question_header(self, header_entry: str) -> bool:
