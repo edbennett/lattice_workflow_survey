@@ -1,6 +1,7 @@
 from io import StringIO
 from typing import Dict, Iterable, Optional
 
+import numpy as np
 import pandas as pd
 import parse
 
@@ -21,11 +22,8 @@ class LimeSurveyParser:
         )
         return self._organize_header(original_data)
 
-    def is_question_header(self, header_entry: str) -> bool:
-        return (self.sep_header in header_entry) and (
-            self.parse_question_id(header_entry[: header_entry.find(self.sep_header)])
-            is not None
-        )
+    def is_question_id(self, header_entry: str) -> bool:
+        return self.parse_question_id(header_entry) is not None
 
     def _organize_header(self, data: pd.DataFrame) -> pd.DataFrame:
         data.columns = pd.MultiIndex.from_tuples(
@@ -51,3 +49,16 @@ class LimeSurveyParser:
                 # file here probably.
                 return dict(extracted_ids.named)
         return None
+
+    def parse_metadata(self, content: str) -> pd.DataFrame:
+        full_data = self.parse(content)
+        return full_data.iloc[
+            :,
+            np.cumprod(
+                [
+                    not self.is_question_id(identifier)
+                    for identifier in full_data.columns.get_level_values("id")
+                ],
+                dtype=bool,
+            ),
+        ]

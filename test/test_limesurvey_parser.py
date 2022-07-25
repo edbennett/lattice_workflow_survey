@@ -12,6 +12,23 @@ def parser() -> LimeSurveyParser:
     return LimeSurveyParser()
 
 
+@pytest.fixture
+def metadata() -> str:
+    return '''"id---Response ID";"submitdate---Date submitted";"G01Q01[SQ001]---Question?"\n
+1;2022-01-01 00:00:00;"Yes"'''
+
+
+@pytest.fixture
+def parsed_metadata() -> pd.DataFrame:
+    return pd.DataFrame(
+        [["2022-01-01 00:00:00"]],
+        index=pd.Index([1], name="id---Response ID"),
+        columns=pd.MultiIndex.from_tuples(
+            [("submitdate", "Date submitted")], names=["id", "title"]
+        ),
+    )
+
+
 def make_columns_structure_from(titles: Iterable[str]) -> pd.MultiIndex:
     return pd.MultiIndex.from_tuples(
         [(None, title) for title in titles], names=["id", "title"]
@@ -97,15 +114,25 @@ def test_for_confidence_splits_headers_with_multiple_entries(
     )
 
 
-def test_recognizes_question_headers(parser: LimeSurveyParser) -> None:
-    assert parser.is_question_header("G01Q02---Is this a question?")
+def test_recognizes_question_id(parser: LimeSurveyParser) -> None:
+    assert parser.is_question_id("G01Q02")
 
 
-def test_recognizes_non_question_headers(parser: LimeSurveyParser) -> None:
-    assert not parser.is_question_header("id---Response ID")
+def test_recognizes_question_ids_with_selection(parser: LimeSurveyParser) -> None:
+    assert parser.is_question_id("G01Q02[SQ003]")
+
+
+def test_recognizes_non_question_ids(parser: LimeSurveyParser) -> None:
+    assert not parser.is_question_id("id")
 
 
 def test_uses_first_column_as_index(parser: LimeSurveyParser) -> None:
     assert parser.parse("index;header\nindex entry;data").index == pd.Index(
         ["index entry"]
     )
+
+
+def test_parses_all_before_first_question_as_metadata(
+    parser: LimeSurveyParser, metadata: str, parsed_metadata: pd.DataFrame
+) -> None:
+    assert (parser.parse_metadata(metadata) == parsed_metadata).all().all()
