@@ -14,7 +14,7 @@ def parser() -> LimeSurveyParser:
 
 @pytest.fixture
 def metadata() -> str:
-    return '''"id---Response ID";"submitdate---Date submitted";"G01Q01[SQ001]---Question?"\n
+    return '''"id---Response ID";"submitdate---Date submitted";"G01Q01[SQ001]---Question?"
 1;2022-01-01 00:00:00;"Yes"'''
 
 
@@ -142,3 +142,17 @@ def test_parses_dates_in_metadata_as_datetime(
     parser: LimeSurveyParser, metadata: str
 ) -> None:
     assert type(parser.parse_metadata(metadata).iloc[0, 0]) == pd.Timestamp
+
+
+def test_does_not_convert_dates_if_only_id_contains_date(
+    parser: LimeSurveyParser, metadata: str
+) -> None:
+    metadata = metadata.replace("Date", "Fate")
+    assert type(parser.parse_metadata(metadata).iloc[0, 0]) != pd.Timestamp
+
+
+def test_does_not_convert_dates_if_only_title_contains_date(
+    parser: LimeSurveyParser, metadata: str
+) -> None:
+    metadata = metadata.replace("date", "fate")
+    assert type(parser.parse_metadata(metadata).iloc[0, 0]) != pd.Timestamp
