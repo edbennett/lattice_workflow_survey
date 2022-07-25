@@ -136,3 +136,9 @@ def test_parses_all_before_first_question_as_metadata(
     parser: LimeSurveyParser, metadata: str, parsed_metadata: pd.DataFrame
 ) -> None:
     assert (parser.parse_metadata(metadata) == parsed_metadata).all().all()
+
+
+def test_parses_dates_in_metadata_as_datetime(
+    parser: LimeSurveyParser, metadata: str
+) -> None:
+    assert type(parser.parse_metadata(metadata).iloc[0, 0]) == pd.Timestamp

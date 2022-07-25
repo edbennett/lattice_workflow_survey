@@ -52,7 +52,7 @@ class LimeSurveyParser:
 
     def parse_metadata(self, content: str) -> pd.DataFrame:
         full_data = self.parse(content)
-        return full_data.iloc[
+        metadata = full_data.iloc[
             :,
             np.cumprod(
                 [
@@ -61,4 +61,10 @@ class LimeSurveyParser:
                 ],
                 dtype=bool,
             ),
-        ]
+        ].copy()
+        for key in metadata.columns:
+            if "date" in key[0] and "Date" in key[1]:
+                metadata[key] = pd.to_datetime(
+                    metadata[key], format="%Y-%m-%d %H:%M:%S"
+                )
+        return metadata
