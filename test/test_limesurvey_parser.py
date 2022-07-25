@@ -76,3 +76,18 @@ def test_splits_headers_with_separator_in_them(parser: LimeSurveyParser) -> None
     ).columns == pd.MultiIndex.from_tuples(
         [("head_id", "head_title")], names=["id", "title"]
     )
+
+
+def test_for_confidence_splits_headers_with_multiple_entries(
+    parser: LimeSurveyParser,
+) -> None:
+    assert (
+        (
+            parser.parse("1---first;2---second").columns
+            == pd.MultiIndex.from_tuples(
+                [("1", "first"), ("2", "second")], names=["id", "title"]
+            )
+        )
+        # a bit weird but first creates a pd.Series, second makes a bool:
+        .all().all()
+    )
