@@ -1,5 +1,5 @@
 from io import StringIO
-from typing import Dict
+from typing import Dict, Iterable, Optional
 
 import pandas as pd
 import parse
@@ -20,15 +20,18 @@ class LimeSurveyParser:
         return self._organize_header(original_data)
 
     def _organize_header(self, data: pd.DataFrame) -> pd.DataFrame:
-        new_columns = [
-            tup if len(tup) == 2 else (None, tup[0])
-            for tup in (entry.split(self.sep_header) for entry in data.columns)
-        ]
         data.columns = pd.MultiIndex.from_tuples(
-            new_columns,
+            self._insert_default_id(
+                entry.split(self.sep_header) for entry in data.columns
+            ),
             names=["id", "title"],
         )
         return data
+
+    def _insert_default_id(
+        self, columns: Iterable[tuple[str, ...]]
+    ) -> list[tuple[Optional[str], ...]]:
+        return [tup if len(tup) == 2 else (None, tup[0]) for tup in columns]
 
     def parse_question_id(self, id_string: str) -> Dict[str, int]:
         # The extra `dict` is a dirty hack for mypy. Should better use a stub
