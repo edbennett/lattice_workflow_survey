@@ -14,8 +14,8 @@ def parser() -> LimeSurveyParser:
 
 @pytest.fixture
 def realistic_data() -> str:
-    return '''"id---Response ID";"submitdate---Date submitted";"G01Q02[SQ003]---Question? [Answer]"
-1;2022-01-01 00:00:00;"Yes"'''
+    return '''"id---Response ID";"submitdate---Date submitted";"G01Q02[SQ003]---Question? [Answer]";"G02Q42---Another question?"
+1;2022-01-01 00:00:00;"Yes";"No"'''
 
 
 @pytest.fixture
@@ -162,10 +162,10 @@ def test_parsing_questions_with_selection_splits_title(
     parser: LimeSurveyParser, realistic_data: str
 ) -> None:
     assert all(
-        title == "Question?" and answer == "Answer"
-        for title, answer in parser.parse_questions(realistic_data)
+        parser.parse_questions(realistic_data)
         .columns.to_frame()[["title", "answer"]]
-        .values
+        .values[0, :]
+        == ["Question?", "Answer"]
     )
 
 
@@ -173,11 +173,10 @@ def test_parsing_questions_without_selection_has_nan_as_answer(
     parser: LimeSurveyParser, realistic_data: str
 ) -> None:
     realistic_data = realistic_data.replace(" [Answer]", "")
-    assert all(
-        title == "Question?" and np.isnan(answer)
-        for title, answer in parser.parse_questions(realistic_data)
+    assert np.isnan(
+        parser.parse_questions(realistic_data)
         .columns.to_frame()[["title", "answer"]]
-        .values
+        .values[-1, -1]
     )
 
 
@@ -210,11 +209,16 @@ def test_finds_correct_subids_for_questions(
 ) -> None:
     assert (
         (
-            parser.parse_questions(realistic_data).columns.to_frame()[
-                ["group_id", "question_id", "answer_id"]
-            ]
-            == [1, 2, 3]
+            parser.parse_questions(realistic_data)
+            .columns.to_frame()[["group_id", "question_id", "answer_id"]]
+            .values
+            == [[1, 2, 3], [2, 42, np.nan]]
         )
-        .all()
-        .all()
+        # have to check for nan separately:
+        .flat[:-1].all()
+    )
+    assert np.isnan(
+        parser.parse_questions(realistic_data)
+        .columns.to_frame()[["group_id", "question_id", "answer_id"]]
+        .values[-1, -1]
     )

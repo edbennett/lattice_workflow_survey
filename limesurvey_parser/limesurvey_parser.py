@@ -113,9 +113,13 @@ class LimeSurveyParser:
     def _add_partial_ids_to_header(self, question_data: pd.DataFrame) -> pd.DataFrame:
         columns = question_data.columns.to_frame()
         columns[["group_id", "question_id", "answer_id"]] = [
-            (lambda ids: [ids["group"], ids["question"], ids["answer"]])(
-                self.parse_question_id(id_string)
-            )
+            (
+                lambda ids: [
+                    ids["group"],
+                    ids["question"],
+                    ids["answer"] if "answer" in ids else None,
+                ]
+            )(self.parse_question_id(id_string))
             for id_string in columns["id"]
         ]
         question_data.columns = pd.MultiIndex.from_frame(
