@@ -80,7 +80,9 @@ class LimeSurveyParser:
         return metadata
 
     def parse_questions(self, content: str) -> pd.DataFrame:
-        return self._select_questions(self.parse(content))
+        return self._add_header_row_with_answer(
+            self._select_questions(self.parse(content))
+        )
 
     def _select_questions(self, full_data: pd.DataFrame) -> pd.DataFrame:
         return full_data.iloc[
@@ -90,3 +92,18 @@ class LimeSurveyParser:
                 for id_string in full_data.columns.get_level_values("id")
             ],
         ]
+
+    def _add_header_row_with_answer(self, question_data: pd.DataFrame) -> pd.DataFrame:
+        columns = question_data.columns.to_frame()
+        columns[["title", "answer"]] = [
+            self._split_into_title_and_answer(title) for title in columns["title"]
+        ]
+        question_data.columns = pd.MultiIndex.from_frame(columns)
+        return question_data
+
+    def _split_into_title_and_answer(self, title: str) -> tuple[str, Optional[str]]:
+        return (
+            lambda parsed: (parsed["title"], parsed["answer"])
+            if parsed is not None
+            else (title, None)
+        )(parse.parse("{title} [{answer}]", title))

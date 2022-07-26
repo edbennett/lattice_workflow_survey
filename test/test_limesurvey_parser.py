@@ -158,6 +158,17 @@ def test_does_not_convert_dates_if_only_title_contains_date(
     assert type(parser.parse_metadata(realistic_data).iloc[0, 0]) != pd.Timestamp
 
 
+def test_parsing_questions_with_selection_splits_title(
+    parser: LimeSurveyParser, realistic_data: str
+) -> None:
+    assert all(
+        title == "Question?" and answer == "Answer"
+        for title, answer in parser.parse_questions(realistic_data)
+        .columns.to_frame()[["title", "answer"]]
+        .values
+    )
+
+
 def test_selects_only_questions_when_parsing_questions(
     parser: LimeSurveyParser, realistic_data: str
 ) -> None:
