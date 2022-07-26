@@ -146,18 +146,22 @@ def test_does_not_convert_dates_if_only_title_contains_date(
 def test_parsing_questions_with_selection_splits_title(
     parser: LimeSurveyParser, realistic_data: str
 ) -> None:
-    assert all(
-        parser.parse_questions(realistic_data)
-        .columns.to_frame()[["title", "answer"]]
-        .values[0, :]
-        == ["Question?", "Answer"]
+    assert (
+        lambda parsed, expected: (
+            np.logical_or(
+                np.logical_and(pd.isna(parsed).values, pd.isna(expected)),
+                parsed.values == expected,
+            )
+        ).all()
+    )(
+        parser.parse_questions(realistic_data).columns.to_frame()[["title", "answer"]],
+        [["Question?", "Answer"], ["Another question?", np.nan]],
     )
 
 
 def test_parsing_questions_without_selection_has_nan_as_answer(
     parser: LimeSurveyParser, realistic_data: str
 ) -> None:
-    realistic_data = realistic_data.replace(" [Answer]", "")
     assert np.isnan(
         parser.parse_questions(realistic_data)
         .columns.to_frame()[["title", "answer"]]
@@ -192,18 +196,10 @@ def test_adds_finegrained_information_to_questions_header(
 def test_finds_correct_subids_for_questions(
     parser: LimeSurveyParser, realistic_data: str
 ) -> None:
-    assert (
-        (
-            parser.parse_questions(realistic_data)
-            .columns.to_frame()[["group_id", "question_id", "answer_id"]]
-            .values
-            == [[1, 2, 3], [2, 42, np.nan]]
-        )
-        # have to check for nan separately:
-        .flat[:-1].all()
-    )
-    assert np.isnan(
-        parser.parse_questions(realistic_data)
-        .columns.to_frame()[["group_id", "question_id", "answer_id"]]
-        .values[-1, -1]
+    assert np.array_equal(
+        parser.parse_questions(realistic_data).columns.to_frame()[
+            ["group_id", "question_id", "answer_id"]
+        ],
+        [[1.0, 2.0, 3.0], [2.0, 42.0, np.nan]],
+        equal_nan=True,
     )
