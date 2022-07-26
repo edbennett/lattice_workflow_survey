@@ -21,7 +21,7 @@ def realistic_data() -> str:
 @pytest.fixture
 def parsed_metadata() -> pd.DataFrame:
     return pd.DataFrame(
-        [["2022-01-01 00:00:00"]],
+        [[pd.to_datetime("2022-01-01 00:00:00")]],
         index=pd.Index([1], name="id---Response ID"),
         columns=pd.MultiIndex.from_tuples(
             [("submitdate", "Date submitted")], names=["id", "title"]
@@ -50,33 +50,23 @@ def test_parses_second_line_as_data(parser: LimeSurveyParser) -> None:
 
 
 def test_uses_semicolon_as_default_separator(parser: LimeSurveyParser) -> None:
-    assert (
-        (
-            parser.parse("header1;header2\ndata1;data2")
-            == pd.DataFrame(
-                [["data2"]],
-                index=pd.Index(["data1"], name="header1"),
-                columns=make_columns_structure_from(["header2"]),
-            )
+    assert parser.parse("header1;header2\ndata1;data2").equals(
+        pd.DataFrame(
+            [["data2"]],
+            index=pd.Index(["data1"], name="header1"),
+            columns=make_columns_structure_from(["header2"]),
         )
-        # a bit weird but first creates a pd.Series, second makes a bool:
-        .all().all()
     )
 
 
 def test_separator_can_be_configured() -> None:
     parser = LimeSurveyParser(sep_csv=",")
-    assert (
-        (
-            parser.parse("header1,header2\ndata1,data2")
-            == pd.DataFrame(
-                [["data2"]],
-                index=pd.Index(["data1"], name="header1"),
-                columns=make_columns_structure_from(["header2"]),
-            )
+    assert parser.parse("header1,header2\ndata1,data2").equals(
+        pd.DataFrame(
+            [["data2"]],
+            index=pd.Index(["data1"], name="header1"),
+            columns=make_columns_structure_from(["header2"]),
         )
-        # a bit weird but first creates a pd.Series, second makes a bool:
-        .all().all()
     )
 
 
@@ -102,15 +92,10 @@ def test_splits_headers_with_separator_in_them(parser: LimeSurveyParser) -> None
 def test_for_confidence_splits_headers_with_multiple_entries(
     parser: LimeSurveyParser,
 ) -> None:
-    assert (
-        (
-            parser.parse("index;1---first;2---second").columns
-            == pd.MultiIndex.from_tuples(
-                [("1", "first"), ("2", "second")], names=["id", "title"]
-            )
+    assert parser.parse("index;1---first;2---second").columns.equals(
+        pd.MultiIndex.from_tuples(
+            [("1", "first"), ("2", "second")], names=["id", "title"]
         )
-        # a bit weird but first creates a pd.Series, second makes a bool:
-        .all().all()
     )
 
 
@@ -135,7 +120,7 @@ def test_uses_first_column_as_index(parser: LimeSurveyParser) -> None:
 def test_parses_all_before_first_question_as_metadata(
     parser: LimeSurveyParser, realistic_data: str, parsed_metadata: pd.DataFrame
 ) -> None:
-    assert (parser.parse_metadata(realistic_data) == parsed_metadata).all().all()
+    assert parser.parse_metadata(realistic_data).equals(parsed_metadata)
 
 
 def test_parses_dates_in_metadata_as_datetime(
