@@ -190,3 +190,31 @@ def test_selects_only_questions_when_parsing_questions(
             realistic_data
         ).columns.get_level_values("id")
     )
+
+
+def test_adds_finegrained_information_to_questions_header(
+    parser: LimeSurveyParser, realistic_data: str
+) -> None:
+    assert parser.parse_questions(realistic_data).columns.names == [
+        "id",
+        "group_id",
+        "question_id",
+        "answer_id",
+        "title",
+        "answer",
+    ]
+
+
+def test_finds_correct_subids_for_questions(
+    parser: LimeSurveyParser, realistic_data: str
+) -> None:
+    assert (
+        (
+            parser.parse_questions(realistic_data).columns.to_frame()[
+                ["group_id", "question_id", "answer_id"]
+            ]
+            == [1, 2, 3]
+        )
+        .all()
+        .all()
+    )
