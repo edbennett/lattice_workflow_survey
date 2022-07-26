@@ -78,3 +78,14 @@ class LimeSurveyParser:
                     metadata[key], format="%Y-%m-%d %H:%M:%S"
                 )
         return metadata
+
+    def parse_questions(self, content: str) -> pd.DataFrame:
+        return (
+            lambda df: df.iloc[
+                :,
+                [
+                    self.is_question_id(id_string)
+                    for id_string in df.columns.get_level_values("id")
+                ],
+            ]
+        )(self.parse(content))

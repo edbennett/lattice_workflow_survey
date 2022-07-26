@@ -156,3 +156,12 @@ def test_does_not_convert_dates_if_only_title_contains_date(
 ) -> None:
     metadata = metadata.replace("date", "fate")
     assert type(parser.parse_metadata(metadata).iloc[0, 0]) != pd.Timestamp
+
+
+def test_selects_only_questions_when_parsing_questions(
+    parser: LimeSurveyParser, metadata: str
+) -> None:
+    assert all(
+        parser.is_question_id(id_string)
+        for id_string in parser.parse_questions(metadata).columns.get_level_values("id")
+    )
