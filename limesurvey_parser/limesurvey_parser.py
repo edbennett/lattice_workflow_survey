@@ -1,5 +1,5 @@
 from io import StringIO
-from typing import Dict, Iterable, Optional
+from typing import Iterable, Optional
 
 import numpy as np
 import pandas as pd
@@ -23,7 +23,7 @@ class LimeSurveyParser:
         return self._organize_header(original_data)
 
     def is_question_id(self, header_entry: str) -> bool:
-        return self.parse_question_id(header_entry) is not None
+        return bool(self.parse_question_id(header_entry))
 
     def _organize_header(self, data: pd.DataFrame) -> pd.DataFrame:
         data.columns = pd.MultiIndex.from_tuples(
@@ -39,16 +39,16 @@ class LimeSurveyParser:
     ) -> list[tuple[Optional[str], ...]]:
         return [tup if len(tup) == 2 else (None, tup[0]) for tup in columns]
 
-    def parse_question_id(self, id_string: str) -> Optional[Dict[str, int]]:
-        for extracted_ids in [
-            parse.parse("G{group:d}Q{question:d}", id_string),
-            parse.parse("G{group:d}Q{question:d}[SQ{answer:d}]", id_string),
-        ]:
-            if extracted_ids is not None:
-                # The extra `dict` is a dirty hack for mypy. Should better use a stub
-                # file here probably.
-                return dict(extracted_ids.named)
-        return None
+    def parse_question_id(self, id_string: str) -> dict[str, int]:
+        # The extra `dict` is a dirty hack for mypy. Should better use a stub
+        # file here probably.
+        return dict(
+            (
+                parse.parse("G{group:d}Q{question:d}", id_string)
+                or parse.parse("G{group:d}Q{question:d}[SQ{answer:d}]", id_string)
+                or parse.Result(None, dict[str, int](), None)
+            ).named
+        )
 
     def parse_metadata(self, content: str) -> pd.DataFrame:
         return self._convert_pertinent_columns_to_timestamps(
