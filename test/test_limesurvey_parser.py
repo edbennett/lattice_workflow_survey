@@ -169,6 +169,18 @@ def test_parsing_questions_with_selection_splits_title(
     )
 
 
+def test_parsing_questions_without_selection_has_nan_as_answer(
+    parser: LimeSurveyParser, realistic_data: str
+) -> None:
+    realistic_data = realistic_data.replace(" [Answer]", "")
+    assert all(
+        title == "Question?" and np.isnan(answer)
+        for title, answer in parser.parse_questions(realistic_data)
+        .columns.to_frame()[["title", "answer"]]
+        .values
+    )
+
+
 def test_selects_only_questions_when_parsing_questions(
     parser: LimeSurveyParser, realistic_data: str
 ) -> None:
