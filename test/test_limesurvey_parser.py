@@ -13,8 +13,8 @@ def parser() -> LimeSurveyParser:
 
 
 @pytest.fixture
-def metadata() -> str:
-    return '''"id---Response ID";"submitdate---Date submitted";"G01Q01[SQ001]---Question?"
+def realistic_data() -> str:
+    return '''"id---Response ID";"submitdate---Date submitted";"G01Q02[SQ003]---Question? [Answer]"
 1;2022-01-01 00:00:00;"Yes"'''
 
 
@@ -133,35 +133,37 @@ def test_uses_first_column_as_index(parser: LimeSurveyParser) -> None:
 
 
 def test_parses_all_before_first_question_as_metadata(
-    parser: LimeSurveyParser, metadata: str, parsed_metadata: pd.DataFrame
+    parser: LimeSurveyParser, realistic_data: str, parsed_metadata: pd.DataFrame
 ) -> None:
-    assert (parser.parse_metadata(metadata) == parsed_metadata).all().all()
+    assert (parser.parse_metadata(realistic_data) == parsed_metadata).all().all()
 
 
 def test_parses_dates_in_metadata_as_datetime(
-    parser: LimeSurveyParser, metadata: str
+    parser: LimeSurveyParser, realistic_data: str
 ) -> None:
-    assert type(parser.parse_metadata(metadata).iloc[0, 0]) == pd.Timestamp
+    assert type(parser.parse_metadata(realistic_data).iloc[0, 0]) == pd.Timestamp
 
 
 def test_does_not_convert_dates_if_only_id_contains_date(
-    parser: LimeSurveyParser, metadata: str
+    parser: LimeSurveyParser, realistic_data: str
 ) -> None:
-    metadata = metadata.replace("Date", "Fate")
-    assert type(parser.parse_metadata(metadata).iloc[0, 0]) != pd.Timestamp
+    realistic_data = realistic_data.replace("Date", "Fate")
+    assert type(parser.parse_metadata(realistic_data).iloc[0, 0]) != pd.Timestamp
 
 
 def test_does_not_convert_dates_if_only_title_contains_date(
-    parser: LimeSurveyParser, metadata: str
+    parser: LimeSurveyParser, realistic_data: str
 ) -> None:
-    metadata = metadata.replace("date", "fate")
-    assert type(parser.parse_metadata(metadata).iloc[0, 0]) != pd.Timestamp
+    realistic_data = realistic_data.replace("date", "fate")
+    assert type(parser.parse_metadata(realistic_data).iloc[0, 0]) != pd.Timestamp
 
 
 def test_selects_only_questions_when_parsing_questions(
-    parser: LimeSurveyParser, metadata: str
+    parser: LimeSurveyParser, realistic_data: str
 ) -> None:
     assert all(
         parser.is_question_id(id_string)
-        for id_string in parser.parse_questions(metadata).columns.get_level_values("id")
+        for id_string in parser.parse_questions(
+            realistic_data
+        ).columns.get_level_values("id")
     )
