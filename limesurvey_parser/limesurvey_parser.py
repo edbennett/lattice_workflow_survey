@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 from io import StringIO
 from typing import Iterable, Optional
 
@@ -7,6 +9,50 @@ import parse
 
 
 class LimeSurveyParser:
+    """
+    Parse LimeSurvey's exported csv files.
+
+    This parser parses LimeSurvey's csv files into `pd.DataFrame`s. It is
+    basically a convenience wrapper around `pd.read_csv()`. It assumes that you
+    have exported your survey responses under `Responses > Export > Export
+    responses` with `Headings` set to "Queston code & question text" and a
+    reasonable "Code/text separator" into csv format. All methods get their
+    data as strings, i.e. it is in the users responsibility to read the file
+    into a python string.
+
+    Attributes
+    ----------
+    sep_csv : str
+        The csv separator, i.e. separator between columns.
+        Default: ";"
+    sep_header : str
+        The separator between ID and title in the header, i.e. what is set under
+        `Headings > Code/text separator` on the `Export` website.
+        Default: "---"
+
+    Methods
+    -------
+    parse(content: str) -> pd.DataFrame:
+        Very simple parsing, mostly meant for internal purposes. Returns the
+        full data set with `id---Response ID` as index and a header with two rows
+        `id` and `title`.
+    parse_metadata(content: str) -> pd.DataFrame:
+        Same as parse, but strips away everything related to the actual
+        questions, i.e. only keeps start date, seed, etc. and converts the dates
+        to timestamps.
+    parse_questions(content: str) -> pd.DataFrame:
+        Only keeps questions and their answers while discarding metadata and
+        timing information. Builds a convenient header by splitting the IDs for
+        the questions into group_id, question_id and (if applicable) answer_id
+        such that
+        ```
+        LimeSurveyParser().parse_questions(content).T.query("question_id=10")
+        ```
+        returns all data for question 10. Please note the extra transposition
+        because `pandas` seems to struggle with `query`ing a column MultiIndex.
+
+    """
+
     sep_csv: str
     sep_header: str
 
@@ -15,6 +61,7 @@ class LimeSurveyParser:
         self.sep_header = sep_header
 
     def parse(self, content: str) -> pd.DataFrame:
+        """Parse into simple structure for internal purposes."""
         if not content:
             return pd.DataFrame()
         original_data = pd.read_csv(
@@ -23,6 +70,7 @@ class LimeSurveyParser:
         return self._organize_header(original_data)
 
     def is_question_id(self, header_entry: str) -> bool:
+        """Find out if this id belongs to a question or not."""
         return bool(self.parse_question_id(header_entry))
 
     def _organize_header(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -40,6 +88,7 @@ class LimeSurveyParser:
         return [tup if len(tup) == 2 else (None, tup[0]) for tup in columns]
 
     def parse_question_id(self, id_string: str) -> dict[str, int]:
+        """Split the question_id of the form `G01Q02[SQ003]`."""
         # The extra `dict` is a dirty hack for mypy. Should better use a stub
         # file here probably.
         return dict(
@@ -51,6 +100,7 @@ class LimeSurveyParser:
         )
 
     def parse_metadata(self, content: str) -> pd.DataFrame:
+        """Strip questions and return only parsed metadata."""
         return self._convert_pertinent_columns_to_timestamps(
             self._select_columns_before_first_question(self.parse(content))
         )
@@ -80,6 +130,7 @@ class LimeSurveyParser:
         return metadata
 
     def parse_questions(self, content: str) -> pd.DataFrame:
+        """Parse the main bulk of the data related to the actual questions."""
         return self._add_partial_ids_to_header(
             self._add_header_row_with_answer(
                 self._select_questions(self.parse(content))
