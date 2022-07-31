@@ -128,3 +128,8 @@ dmypy.json
 .pyre/
 
 # End of https://www.gitignore.io/api/python
+
+
+survey-results.csv
+analysis.nbconvert.ipynb
+plots/*.svg
