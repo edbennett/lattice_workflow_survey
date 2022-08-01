@@ -24,7 +24,7 @@ def main():
         pd.read_csv(args.input_filename, delimiter=args.delimiter),
         args.question_ids
     )
-    df.to_csv(args.output_filename)
+    df.to_csv(args.output_filename, sep=args.delimiter)
 
 
 if __name__ == "__main__":

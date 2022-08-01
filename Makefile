@@ -15,7 +15,7 @@ survey-results-redacted.csv : survey-results.csv
 
 all_plots : survey-results-redacted.csv
 	mkdir -p ${PLOT_DIR}
-	PLOT_DIR=${PLOT_DIR} EXPORT_FILETYPE=${EXPORT_FILETYPE} FONT_FAMILY=${FONT_FAMILY} FONT_SIZE=${FONT_SIZE} pipenv run jupyter nbconvert --execute analysis.ipynb --to ipynb
+	FILE_TO_PROCESS=$< PLOT_DIR=${PLOT_DIR} EXPORT_FILETYPE=${EXPORT_FILETYPE} FONT_FAMILY=${FONT_FAMILY} FONT_SIZE=${FONT_SIZE} pipenv run jupyter nbconvert --execute analysis.ipynb --to ipynb
 
 clean :
 	rm -r ${PLOT_DIR}/*.svg
