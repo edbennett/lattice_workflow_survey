@@ -133,3 +133,4 @@ dmypy.json
 survey-results.csv
 analysis.nbconvert.ipynb
 plots/*.svg
+winners.txt

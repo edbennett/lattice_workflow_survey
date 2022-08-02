@@ -1,10 +1,11 @@
-from argparse import ArgumentParser
 import sys
+from argparse import ArgumentParser
+from typing import List
 
 import pandas as pd
 
 
-def redact(df, question_ids):
+def redact(df: pd.DataFrame, question_ids: List[str]) -> pd.DataFrame:
     for column in df.columns:
         for question_id in question_ids:
             if question_id in column and column in df.columns:
@@ -12,7 +13,7 @@ def redact(df, question_ids):
     return df
 
 
-def main():
+def main() -> None:
     parser = ArgumentParser()
     parser.add_argument("input_filename")
     parser.add_argument("question_ids", nargs="+")
@@ -21,8 +22,7 @@ def main():
     args = parser.parse_args()
 
     df = redact(
-        pd.read_csv(args.input_filename, delimiter=args.delimiter),
-        args.question_ids
+        pd.read_csv(args.input_filename, delimiter=args.delimiter), args.question_ids
     )
     df.to_csv(args.output_filename, sep=args.delimiter)
 
