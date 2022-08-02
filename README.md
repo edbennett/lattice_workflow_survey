@@ -2,7 +2,7 @@
 
 This repository contains the results of a survey on software workflows and open science in lattice field theory conducted in 2022 by Andreas Athenodorou, Ed Bennett, Julian Lenz, and Elli Papadopolou. These data were collected using [LimeSurvey][limesurvey], and were first presented in [a talk at Lattice 2022 by Andreas Athenodorou][lattice2022-talk].
 
-The analysis is based on Julian Lenz's [LimeSurvey CSV parser](parser).
+The analysis is based on Julian Lenz's [LimeSurvey CSV parser][parser].
 
 ## Data
 The data are included in `survey-results-redacted.csv`, with `;` delimiting fields, and `%%%` separating question codes from question texts in column headings.
@@ -22,7 +22,8 @@ pipenv run pre-commit install -t pre-push
 ## Usage
 With the dependencies installed, it should be sufficient to run
 ```sh
-make```
+make
+```
 
 This will run the `analysis.ipynb` Jupyter notebook and generate the plots used in [Andreas Athenodorou's talk at Lattice 2022][lattice2022-talk].  Alternatively, you can open the notebook directly and interrogate it in more detail.
 
