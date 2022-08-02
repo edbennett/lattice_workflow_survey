@@ -1,4 +1,4 @@
-EXPORT_FILETYPE := svg
+EXPORT_FILETYPE := png
 FONT_FAMILY := Calibri
 FONT_SIZE := 13
 
