@@ -82,6 +82,12 @@ def test_parses_question_id_with_selected_answer(parser: LimeSurveyParser) -> No
     )
 
 
+def test_parses_question_id_with_other_answer(parser: LimeSurveyParser) -> None:
+    assert parser.parse_question_id("G01Q2[other]") == dict(
+        group=1, question=2, answer="other"
+    )
+
+
 def test_splits_headers_with_separator_in_them(parser: LimeSurveyParser) -> None:
     default_separator = "---"
     assert parser.parse(
@@ -107,6 +113,10 @@ def test_recognizes_question_id(parser: LimeSurveyParser) -> None:
 
 def test_recognizes_question_ids_with_selection(parser: LimeSurveyParser) -> None:
     assert parser.is_question_id("G01Q02[SQ003]")
+
+
+def test_recognizes_question_ids_with_other(parser: LimeSurveyParser) -> None:
+    assert parser.is_question_id("G01Q02[other]")
 
 
 def test_recognizes_non_question_ids(parser: LimeSurveyParser) -> None:
