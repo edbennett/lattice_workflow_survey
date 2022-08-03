@@ -95,6 +95,7 @@ class LimeSurveyParser:
             (
                 parse.parse("G{group:d}Q{question:d}", id_string)
                 or parse.parse("G{group:d}Q{question:d}[SQ{answer:d}]", id_string)
+                or parse.parse("G{group:d}Q{question:d}[{answer}]", id_string)
                 or parse.Result(None, dict[str, int](), None)
             ).named
         )
