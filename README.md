@@ -1,5 +1,7 @@
 # Survey on Reproducible Workflows and Open Science in Lattice Field Theory
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6980070.svg)](https://doi.org/10.5281/zenodo.6980070)
+
 This repository contains the results of a survey on software workflows and open science in lattice field theory conducted in 2022 by Andreas Athenodorou, Ed Bennett, Julian Lenz, and Elli Papadopolou. These data were collected using [LimeSurvey][limesurvey], and were first presented in [a talk at Lattice 2022 by Andreas Athenodorou][lattice2022-talk].
 
 The analysis is based on Julian Lenz's [LimeSurvey CSV parser][parser].
